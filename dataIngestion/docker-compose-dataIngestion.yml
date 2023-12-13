@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  data-ingestion:
+    image: dataingestion-image
+    build:
+      context: .
+    environment:
+      - KAFKA_BROKER=kafka-1:9092
+      - TOPIC_VIEWS=views
+      - TOPIC_PURCHASES=purchases
+      - DATASET_FILE=/usr/src/app/2019-Oct.csv
+    volumes:
+      - C:/Users/pabbu/Project/dataset/2019-Oct.csv:/usr/src/app/2019-Oct.csv
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    name: shared_network
+    driver: bridge
+    external: true

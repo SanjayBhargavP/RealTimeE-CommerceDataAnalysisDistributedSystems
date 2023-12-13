@@ -1,0 +1,56 @@
+docker-compose -f docker-compose-kafka.yml up -d
+
+docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic views --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
+docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic purchases --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
+
+docker exec -it kafka-kafka-2-1 kafka-topics.sh --list --bootstrap-server kafka-2:9093
+docker exec -it kafka-kafka-1-1 kafka-topics.sh --list --bootstrap-server kafka-1:9092
+
+docker-compose -f docker-compose-kafka.yml down (Only to stop)
+
+docker build -f dataIngestionDockerFile -t dataingestion-image .
+
+docker-compose -f docker-compose-dataIngestion.yml up -d
+
+docker exec -it kafka-kafka-1-1 /bin/sh
+
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic views --from-beginning
+
+UnderProcess: 
+docker-compose -f docker-compose-flink.yml up -d
+docker-compose -f docker-compose-couchbase.yml up -d
+
+
+In a Kafka cluster, brokers like kafka-1, kafka-2, and kafka-3 work together to distribute and balance the load, but the concept of load balancing in Kafka is a bit different from traditional load balancing in web servers or application servers. Here's how it works:
+
+Topic Partitions
+Kafka distributes data across the cluster via partitions of a topic.
+Each partition is a log, and messages are appended to it in the order they are received.
+Partitions are distributed across different brokers in the cluster to balance the load.
+Replicas
+Each partition has replicas across different brokers based on the replication factor.
+One of these replicas is designated as the leader, and all produce and consume requests go through this leader.
+The other replicas are followers that replicate the leader's log. In case the leader fails, one of the followers can take over as the new leader.
+Producer Load Balancing
+Producers send messages to the leader of a partition. If a topic has multiple partitions, producers can distribute messages across these partitions.
+This can be done either in a round-robin fashion, by partitioning based on some key, or by custom partitioning logic.
+Consumer Load Balancing
+Consumers in a consumer group each read from exclusive partitions of a topic.
+If you have more consumers in a group than partitions, some consumers will be idle.
+Kafka automatically manages this consumer-partition assignment and redistributes partitions among consumers in a consumer group if a consumer fails or a new consumer joins.
+Broker Load Balancing
+Kafka does not automatically balance partitions across brokers. When you create a topic with multiple partitions, Kafka distributes these partitions across the available brokers.
+However, over time, as you add or remove topics and brokers, this distribution might become uneven. You might need to manually rebalance partitions across brokers, which can be done using tools like LinkedIn's Kafka Cruise Control.
+Fault Tolerance
+By having multiple replicas of a partition across different brokers, Kafka ensures fault tolerance. If a broker fails, another broker with the replica can continue serving data.
+In summary, kafka-1, kafka-2, and kafka-3 in your cluster work together to distribute the storage and processing load of your Kafka topics. This distribution is primarily managed via partitions and replicas. The load balancing of consumers and producers across these partitions is handled by Kafka, while the distribution of partitions across brokers may need manual intervention for optimal balance over time.
+
+
+
+
+Reliability: Can be demonstrated through Kafka's ability to handle broker failures and Flink's state management and checkpointing features.
+Scalability: Show how easily you can scale Kafka brokers and Flink task managers by adjusting the Docker Compose configurations.
+Fault Tolerance: Kafka's multiple brokers and ZooKeeper nodes provide fault tolerance. Flink also supports fault-tolerant stream processing.
+Replication: Kafka inherently supports data replication across brokers. You can configure replication factors in your Kafka topics to demonstrate this.
+Containerization: Your use of Docker and Docker Compose already achieves this. You can further demonstrate how containerization simplifies deployment and scaling.
+

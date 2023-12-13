@@ -1,0 +1,16 @@
+FROM python:3.8
+
+# Setting working directory
+WORKDIR /usr/src/app
+
+# Copying the current directory contents into the container at /usr/src/app
+COPY . .
+
+# Install needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy dataIngestion.py into the container
+COPY dataIngestion.py .
+
+# Run dataIngestion.py when the container launches
+CMD ["python", "./dataIngestion.py"]
