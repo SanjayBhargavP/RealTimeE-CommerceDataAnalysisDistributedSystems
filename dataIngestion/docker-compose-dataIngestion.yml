@@ -5,13 +5,19 @@ services:
     image: dataingestion-image
     build:
       context: .
+    entrypoint: /usr/src/app/startup.sh
     environment:
       - KAFKA_BROKER=kafka-1:9092
       - TOPIC_VIEWS=views
       - TOPIC_PURCHASES=purchases
       - DATASET_FILE=/usr/src/app/2019-Oct.csv
+      - COUCHBASE_URL=couchbase://couchbase-server
+      - COUCHBASE_BUCKET=dataIngestionBucket
+      - COUCHBASE_USERNAME=user
+      - COUCHBASE_PASSWORD=password
     volumes:
-      - C:/Users/pabbu/Project/dataset/2019-Oct.csv:/usr/src/app/2019-Oct.csv
+      - C:/Users/pabbu/OneDrive/Documents/GitHub/DSD_Project/dataset/2019-Oct.csv:/usr/src/app/2019-Oct.csv
+      - ./startup.sh:/usr/src/app/startup.sh
     networks:
       - shared_network
 

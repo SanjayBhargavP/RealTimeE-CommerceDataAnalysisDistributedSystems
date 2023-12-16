@@ -1,7 +1,20 @@
 version: '3'
+
 services:
-  couchbase:
-    image: couchbase:latest
+  couchbase-server:
+    image: couchbase
     ports:
-      - "8091-8094:8091-8094"
-      - "11210:11210"
+      - 8091-8094:8091-8094
+      - 11210:11210
+    environment:
+      - COUCHBASE_BUCKET=dataIngestionBucket
+      - COUCHBASE_USERNAME=user
+      - COUCHBASE_PASSWORD=password
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    name: shared_network
+    driver: bridge
+    external: true

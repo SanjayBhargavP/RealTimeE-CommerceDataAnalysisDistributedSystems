@@ -10,17 +10,36 @@ docker exec -it kafka-kafka-1-1 kafka-topics.sh --list --bootstrap-server kafka-
 
 docker-compose -f docker-compose-kafka.yml down (Only to stop)
 
+
+Create cluster as dataIngestionCluster
+
+Create user as user
+
+Create password as password
+
+Create bucket as dataIngestionBucket
+
+Create scope as myScope
+
+Add Collection to myScope as counters 
+
 docker build -f dataIngestionDockerFile -t dataingestion-image .
 
+docker-compose -f docker-compose-dataIngestion.yml build
+
 docker-compose -f docker-compose-dataIngestion.yml up -d
+
+docker-compose -f docker-compose-dataIngestion.yml up -d --scale data-ingestion=4 (to showcase scalability)
 
 docker exec -it kafka-kafka-1-1 /bin/sh
 
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic views --from-beginning
+kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic views --from-beginning
+
+docker-compose -f docker-compose-couchbase.yml up -d
 
 UnderProcess: 
 docker-compose -f docker-compose-flink.yml up -d
-docker-compose -f docker-compose-couchbase.yml up -d
 
 
 In a Kafka cluster, brokers like kafka-1, kafka-2, and kafka-3 work together to distribute and balance the load, but the concept of load balancing in Kafka is a bit different from traditional load balancing in web servers or application servers. Here's how it works:

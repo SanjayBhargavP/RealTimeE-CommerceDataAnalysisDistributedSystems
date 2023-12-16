@@ -12,5 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy dataIngestion.py into the container
 COPY dataIngestion.py .
 
-# Run dataIngestion.py when the container launches
-CMD ["python", "./dataIngestion.py"]
+COPY startup.sh .
+
+COPY generate_instance_id.py .
+
+COPY get_total_instances.py .
