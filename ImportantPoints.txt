@@ -5,6 +5,11 @@ docker-compose -f docker-compose-kafka.yml up -d
 docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic views --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
 docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic purchases --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
 
+docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic top-views --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
+
+docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic top-purchases --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
+
+
 docker exec -it kafka-kafka-2-1 kafka-topics.sh --list --bootstrap-server kafka-2:9093
 docker exec -it kafka-kafka-1-1 kafka-topics.sh --list --bootstrap-server kafka-1:9092
 
@@ -38,8 +43,17 @@ kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic views --from
 
 docker-compose -f docker-compose-couchbase.yml up -d
 
-UnderProcess: 
 docker-compose -f docker-compose-flink.yml up -d
+
+docker cp C:/Users/pabbu/OneDrive/Documents/GitHub/DSD_Project/flink/flink-project.jar flink-jobmanager-1:/job.jar
+
+docker exec -it flink-jobmanager-1 flink run /job.jar
+
+kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic top-purchases --from-beginning
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-purchases --from-beginning
+
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-views --from-beginning
+
 
 
 In a Kafka cluster, brokers like kafka-1, kafka-2, and kafka-3 work together to distribute and balance the load, but the concept of load balancing in Kafka is a bit different from traditional load balancing in web servers or application servers. Here's how it works:

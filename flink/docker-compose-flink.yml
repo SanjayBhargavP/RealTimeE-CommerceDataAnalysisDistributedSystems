@@ -1,22 +1,33 @@
-version: '3'
+version: '3.7'
+
 services:
   jobmanager:
-    image: flink:1.13.0
+    image: flink:1.12.0 
     ports:
-      - "8081:8081"
+      - "8081:8081"  
     command: jobmanager
     environment:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
+    networks:
+      - shared_network
+
   taskmanager:
-    image: flink:1.13.0
+    image: flink:1.12.0  
     depends_on:
       - jobmanager
     command: taskmanager
-    scale: 2
     environment:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 2
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    name: shared_network
+    driver: bridge
+    external: true
