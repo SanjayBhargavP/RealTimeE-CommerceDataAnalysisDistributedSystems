@@ -1,0 +1,18 @@
+version: '3.7'  # Use the appropriate version for your Docker Compose file
+
+services:
+  streams:
+    image: kafka-streams-app
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    name: shared_network
+    driver: bridge
+    external: true

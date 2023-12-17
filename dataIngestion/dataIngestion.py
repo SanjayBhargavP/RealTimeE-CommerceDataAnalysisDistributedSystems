@@ -36,8 +36,6 @@ def send_record(topic, record):
 def split_and_process_data(file_path, instance_id, total_instances):
     try:
         df = pd.read_csv(file_path)
-        column_names = ["event_time", "event_type", "product_id", "category_id",
-                        "category_code", "brand", "price", "user_id", "user_session"]
         total_rows = len(df)
         rows_per_instance = total_rows // total_instances
         start_row = rows_per_instance * instance_id
@@ -45,13 +43,14 @@ def split_and_process_data(file_path, instance_id, total_instances):
         print(f"Start row: {start_row}")
         print(f"End row: {end_row}")
         # Processing the assigned portion of the dataset
-        for index, row in df.iloc[start_row:end_row].iterrows():
-            processed_data =  dict(zip(column_names, row))
+        for i, row in df.iloc[start_row:end_row].iterrows():
+            cleaned_row = row.fillna('')  # Replace NaN values with an empty string
+            csv_record = ','.join(str(item) for item in cleaned_row)
             event_type = row[1]
             if event_type == 'view':
-                send_record(TOPIC_VIEWS, processed_data)
+                send_record(TOPIC_VIEWS, csv_record)
             elif event_type == 'purchase':
-                send_record(TOPIC_PURCHASES, processed_data)
+                send_record(TOPIC_PURCHASES, csv_record)
         producer.flush()
     except Exception as e:
         print(f"Exception: {e}")

@@ -50,6 +50,11 @@ docker cp C:/Users/pabbu/OneDrive/Documents/GitHub/DSD_Project/flink/flink-proje
 
 docker exec -it flink-jobmanager-1 flink run /job.jar
 
+docker build -t my-kafka-streams-app .
+
+docker run --name my-kafka-streams-container -d my-kafka-streams-app
+
+
 kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic top-purchases --from-beginning
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-purchases --from-beginning
 
@@ -62,6 +67,7 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group fl
 
 
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-views --from-beginning
+
 
 
 
