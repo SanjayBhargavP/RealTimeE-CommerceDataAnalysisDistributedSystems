@@ -15,6 +15,7 @@ docker exec -it kafka-kafka-1-1 kafka-topics.sh --list --bootstrap-server kafka-
 
 docker-compose -f docker-compose-kafka.yml down (Only to stop)
 
+docker-compose -f docker-compose-couchbase.yml up -d
 
 Create cluster as dataIngestionCluster
 
@@ -41,7 +42,7 @@ docker exec -it kafka-kafka-1-1 /bin/sh
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic views --from-beginning
 kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic views --from-beginning
 
-docker-compose -f docker-compose-couchbase.yml up -d
+
 
 docker-compose -f docker-compose-flink.yml up -d
 
@@ -51,6 +52,14 @@ docker exec -it flink-jobmanager-1 flink run /job.jar
 
 kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic top-purchases --from-beginning
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-purchases --from-beginning
+
+kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic views --from-beginning
+
+kafka-consumer-groups.sh --bootstrap-server localhost:9093 --describe --group flink-consumer-group
+
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group flink-consumer-group
+
+
 
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-views --from-beginning
 

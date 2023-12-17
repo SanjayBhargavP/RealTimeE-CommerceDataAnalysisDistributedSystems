@@ -36,6 +36,8 @@ def send_record(topic, record):
 def split_and_process_data(file_path, instance_id, total_instances):
     try:
         df = pd.read_csv(file_path)
+        column_names = ["event_time", "event_type", "product_id", "category_id",
+                        "category_code", "brand", "price", "user_id", "user_session"]
         total_rows = len(df)
         rows_per_instance = total_rows // total_instances
         start_row = rows_per_instance * instance_id
@@ -44,7 +46,7 @@ def split_and_process_data(file_path, instance_id, total_instances):
         print(f"End row: {end_row}")
         # Processing the assigned portion of the dataset
         for index, row in df.iloc[start_row:end_row].iterrows():
-            processed_data = row.to_json()
+            processed_data =  dict(zip(column_names, row))
             event_type = row[1]
             if event_type == 'view':
                 send_record(TOPIC_VIEWS, processed_data)
