@@ -3,6 +3,7 @@ docker network create shared_network
 docker-compose -f docker-compose-kafka.yml up -d
 
 docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic views --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
+
 docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic purchases --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
 
 docker exec -it kafka-kafka-1-1 kafka-topics.sh --create --topic top-views --partitions 3 --replication-factor 2 --bootstrap-server kafka-1:9092
@@ -43,20 +44,16 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic views --from
 kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic views --from-beginning
 
 
+docker build -t kafka-streams-app .
 
-docker-compose -f docker-compose-flink.yml up -d
+docker run --network shared_network --name kafka-streams-app-instance -d kafka-streams-app
 
-docker cp C:/Users/pabbu/OneDrive/Documents/GitHub/DSD_Project/flink/flink-project.jar flink-jobmanager-1:/job.jar
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-views --from-beginning
 
-docker exec -it flink-jobmanager-1 flink run /job.jar
-
-docker build -t my-kafka-streams-app .
-
-docker run --name my-kafka-streams-container -d my-kafka-streams-app
-
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-purchases --from-beginning
 
 kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic top-purchases --from-beginning
-kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-purchases --from-beginning
+
 
 kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic views --from-beginning
 
@@ -66,7 +63,7 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group fl
 
 
 
-kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic top-views --from-beginning
+
 
 
 
@@ -104,3 +101,8 @@ Fault Tolerance: Kafka's multiple brokers and ZooKeeper nodes provide fault tole
 Replication: Kafka inherently supports data replication across brokers. You can configure replication factors in your Kafka topics to demonstrate this.
 Containerization: Your use of Docker and Docker Compose already achieves this. You can further demonstrate how containerization simplifies deployment and scaling.
 
+docker-compose -f docker-compose-flink.yml up -d
+
+docker cp C:/Users/pabbu/OneDrive/Documents/GitHub/DSD_Project/flink/flink-kafka-app-1.0-SNAPSHOT.jar flink-jobmanager-1:/job.jar
+
+docker exec -it flink-jobmanager-1 flink run /job.jar
