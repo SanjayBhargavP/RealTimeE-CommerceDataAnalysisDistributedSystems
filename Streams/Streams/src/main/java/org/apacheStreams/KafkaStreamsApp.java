@@ -63,7 +63,7 @@ class ProductCountSerde implements Serde<ProductCount> {
 public class KafkaStreamsApp {
     public static void main(String[] args) {
         Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "csv-app-one");
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "csv-app-oneeee");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka-1:9092");
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
@@ -71,9 +71,10 @@ public class KafkaStreamsApp {
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, "0");
 
         StreamsBuilder builder = new StreamsBuilder();
-        KStream<String, String> stream = builder.stream("purchases");
+        KStream<String, String> purchasesstream = builder.stream("purchases");
+        KStream<String, String> viewStream = builder.stream("views");
 
-        KTable<String, Long> productCounts = stream
+        KTable<String, Long> productPurchaseCounts = purchasesstream
                 .flatMapValues(value -> {
                     String[] parts = value.replace("\"", "").split(",");
                     if (parts.length >= 9) {
@@ -83,14 +84,28 @@ public class KafkaStreamsApp {
                     }
                 })
                 .groupBy((key, productId) -> productId, Grouped.with(Serdes.String(), Serdes.String()))
-                .count(Materialized.as("product-counts"));
+                .count(Materialized.as("product-purchase-counts"));
+        KTable<String, Long> productViewCounts = viewStream
+                .flatMapValues(value -> {
+                    String[] parts = value.replace("\"", "").split(",");
+                    if (parts.length >= 9) {
+                        return java.util.Collections.singletonList(parts[2]);
+                    } else {
+                        return java.util.Collections.emptyList();
+                    }
+                })
+                .groupBy((key, productId) -> productId, Grouped.with(Serdes.String(), Serdes.String()))
+                .count(Materialized.as("product-view-counts"));
 
         // Convert the aggregated counts into JSON
-        KStream<String, ProductCount> productCountsJson = productCounts.toStream()
+        KStream<String, ProductCount> productPurchaseCountsJson = productPurchaseCounts.toStream()
+                .map((key, value) -> KeyValue.pair(key, new ProductCount(key, value)));
+        KStream<String, ProductCount> productViewCountsJson = productViewCounts.toStream()
                 .map((key, value) -> KeyValue.pair(key, new ProductCount(key, value)));
 
         // Send the JSON data to the 'top-views' topic
-        productCountsJson.to("top-purchases", Produced.with(Serdes.String(), new ProductCountSerde()));
+        productPurchaseCountsJson.to("top-purchases", Produced.with(Serdes.String(), new ProductCountSerde()));
+        productViewCountsJson.to("top-views", Produced.with(Serdes.String(), new ProductCountSerde()));
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
